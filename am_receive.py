@@ -27,17 +27,17 @@ if __name__ == '__main__':
 
 class am_receive(grc_wxgui.top_block_gui):
 
-    def __init__(self, file_path, default_freq, default_resamp_factor, default_samp_rate, default_volume, min_volume, max_volume, min_freq, max_freq, cutoff_freq, sink_freq, wave_type):
+    def __init__(self, file_path, min_freq, max_freq, min_volume, max_volume, default_samp_rate,default_resamp_factor, cutoff_freq):
         grc_wxgui.top_block_gui.__init__(self, title="Am Receive")
         _icon_path = "/usr/share/icons/hicolor/32x32/apps/gnuradio-grc.png"
         self.SetIcon(wx.Icon(_icon_path, wx.BITMAP_TYPE_ANY))
 
         # Variables
 
-        self.volume = volume = default_volume
+        self.volume = volume = 0.05
         self.samp_rate = samp_rate = default_samp_rate
         self.resamp_factor = resamp_factor = default_resamp_factor
-        self.freq = freq = default_freq
+        self.freq = freq = 0
 
         # Blocks
 
@@ -135,7 +135,7 @@ class am_receive(grc_wxgui.top_block_gui):
 
         # Sampler after source
         self.rational_resampler_xxx_0 = filter.rational_resampler_ccc(
-                interpolation=sink_freq/((samp_rate/resamp_factor)/resamp_factor),
+                interpolation=48000/((samp_rate/resamp_factor)/resamp_factor),
                 decimation=resamp_factor,
                 taps=None,
                 fractional_bw=None,
@@ -158,13 +158,10 @@ class am_receive(grc_wxgui.top_block_gui):
         self.blocks_complex_to_mag_0 = blocks.complex_to_mag(1)
 
         # Audio Sink
-        self.audio_sink_0 = audio.sink(sink_freq, "", True)
+        self.audio_sink_0 = audio.sink(48000, "", True)
 
         # Wave generator
-        if wave_type=="sine":
-            self.analog_sig_source_x_0 = analog.sig_source_c(samp_rate, analog.GR_SIN_WAVE, freq, 1, 0)
-        elif wave_type == "cos":
-            self.analog_sig_source_x_0 = analog.sig_source_c(samp_rate, analog.GR_COS_WAVE, freq, 1, 0)
+        self.analog_sig_source_x_0 = analog.sig_source_c(samp_rate, analog.GR_COS_WAVE, freq, 1, 0)
 
         # Automatic Volume Adjustment
         self.analog_agc2_xx_0 = analog.agc2_cc(6.25e-4, 1e-5, 1.0, 1.0)
@@ -222,9 +219,9 @@ class am_receive(grc_wxgui.top_block_gui):
         self.analog_sig_source_x_0.set_frequency(self.freq)
 
 
-def main(file_path, default_freq, default_resamp_factor, default_samp_rate, default_volume, min_volume, max_volume, min_freq, max_freq, cutoff_freq, sink_freq, wave_type):
+def main(file_path, min_freq, max_freq, min_volume, max_volume, default_samp_rate,default_resamp_factor, cutoff_freq):
 
-    tb = am_receive(file_path, default_freq, default_resamp_factor, default_samp_rate, default_volume, min_volume, max_volume, min_freq, max_freq, cutoff_freq, sink_freq, wave_type)
+    tb = am_receive(file_path, min_freq, max_freq, min_volume, max_volume, default_samp_rate,default_resamp_factor, cutoff_freq)
     tb.Start(True)
     tb.Wait()
 
@@ -233,23 +230,20 @@ def main(file_path, default_freq, default_resamp_factor, default_samp_rate, defa
 file_path = "/home/nowismytime/Downloads/am_usrp710.dat"
 
 # variables for frequency slider
-default_freq = -80000
 min_freq = -127000
 max_freq = 127000
 
 # variables for volume slider
-default_volume = 0.05
 min_volume = 0
 max_volume = 1
 
 default_samp_rate = 256000
 default_resamp_factor = 4
 cutoff_freq = 5000
-sink_freq = 48000
 
 wave_type = "cos"
 
 
 
 if __name__ == '__main__':
-    main(file_path, default_freq, default_resamp_factor, default_samp_rate, default_volume, min_volume, max_volume, min_freq, max_freq, cutoff_freq, sink_freq, wave_type)
+    main(file_path, min_freq, max_freq, min_volume, max_volume, default_samp_rate,default_resamp_factor, cutoff_freq)
